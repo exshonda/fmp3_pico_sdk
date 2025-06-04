@@ -44,7 +44,9 @@
 #ifndef TOPPERS_TARGET_TEST_H
 #define TOPPERS_TARGET_TEST_H
 
+#ifndef STACK_SIZE
 #define STACK_SIZE (1024)
+#endif /* STACK_SIZE */
 
 #define INTNO1 (0x10000U | (26 + 16))
 #define INTNO2 (0x20000U | (27 + 16))
