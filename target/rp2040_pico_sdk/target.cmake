@@ -29,6 +29,7 @@ list(APPEND FMP3_INCLUDE_DIRS
     ${PICO_SDK_PATH}/src/rp2_common/pico_platform_panic/include
     ${PICO_SDK_PATH}/src/rp2_common/pico_runtime_init/include
     ${PICO_SDK_PATH}/src/rp2_common/pico_runtime/include
+    ${PICO_SDK_PATH}/src/rp2_common/pico_stdio/include
     ${PICO_SDK_PATH}/src/rp2_common/pico_multicore/include
     ${PICO_SDK_PATH}/src/rp2_common/hardware_base/include
     ${PICO_SDK_PATH}/src/rp2_common/hardware_exception/include
