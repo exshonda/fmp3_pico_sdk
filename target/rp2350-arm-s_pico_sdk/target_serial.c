@@ -11,6 +11,8 @@
 #include "target_syssvc.h"
 #include "pico/stdio.h"
 
+extern void sio_rdy_snd(intptr_t exinf);
+
 struct sio_port_control_block
 {
     void (*handle)(void*);         /* 割込みハンドラ */
@@ -92,6 +94,10 @@ SIOPCB *sio_opn_por(ID siopid, intptr_t exinf)
 
     stdio_set_chars_available_callback(p_siopcb->handle, p_siopcb); // 標準入出力のコールバックを設定
 
+    if (p_siopcb->rdy_snd) {
+        sio_irdy_snd(p_siopcb->exinf);
+    }
+
     return p_siopcb;
 }
 
@@ -111,7 +117,7 @@ void sio_cls_por(SIOPCB *p_siopcb)
 bool_t sio_snd_chr(SIOPCB *p_siopcb, char ch)
 {
     p_siopcb->snd_buf[p_siopcb->snd_wpos] = ch; // 送信バッファに文字を格納
-    if (putchar_raw(p_siopcb->snd_buf[p_siopcb->snd_wpos]) == 1) {
+    if (putchar_raw(p_siopcb->snd_buf[p_siopcb->snd_wpos]) == ch) {
         p_siopcb->snd_wpos = (p_siopcb->snd_wpos + 1) % sizeof(p_siopcb->snd_buf); // 書き込み位置を更新
         return true; // 送信成功
     }
@@ -141,6 +147,7 @@ void sio_ena_cbr(SIOPCB *p_siopcb, uint_t cbrtn)
     switch (cbrtn) {
     case SIO_RDY_SND:
         p_siopcb->rdy_snd = true;
+        sio_rdy_snd(p_siopcb->exinf);
         break;
     case SIO_RDY_RCV:
         p_siopcb->rdy_rcv = true;

@@ -594,6 +594,50 @@ sio_irdy_snd(EXINF exinf)
 }
 
 /*
+ *  シリアルポートからの送信可能コールバック
+ */
+void
+sio_rdy_snd(EXINF exinf)
+{
+	SPCB	*p_spcb;
+	ID		semid = 0;
+
+	p_spcb = (SPCB *) exinf;
+
+	if (p_spcb->rcv_fc_chr != '\0') {
+		/*
+		 *  START/STOPを送信する．
+		 */
+		(void) sio_snd_chr(p_spcb->p_siopcb, p_spcb->rcv_fc_chr);
+		p_spcb->rcv_fc_chr = '\0';
+	}
+	else if (!(p_spcb->snd_stopped) && p_spcb->snd_count > 0U) {
+		/*
+		 *  送信バッファ中から文字を取り出して送信する．
+		 */
+		(void) sio_snd_chr(p_spcb->p_siopcb,
+					p_spcb->p_spinib->snd_buffer[p_spcb->snd_read_ptr]);
+		INC_PTR(p_spcb->snd_read_ptr, p_spcb->p_spinib->snd_bufsz);
+		if (p_spcb->snd_count == p_spcb->p_spinib->snd_bufsz) {
+			semid = p_spcb->p_spinib->snd_semid;
+		}
+		p_spcb->snd_count--;
+	}
+	else {
+		/*
+		 *  送信すべき文字がない場合は，送信可能コールバックを禁止する．
+		 */
+		sio_dis_cbr(p_spcb->p_siopcb, SIO_RDY_SND);
+	}
+
+	if ((semid != 0)) {
+		if (sig_sem(semid) < 0) {
+			p_spcb->errorflag = true;
+		}
+	}
+}
+
+/*
  *  シリアルポートからの受信通知コールバック
  */
 void
