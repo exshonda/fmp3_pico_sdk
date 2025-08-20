@@ -205,12 +205,8 @@ void sio_handler(void *ptr)
     /*
      *  受信データをバッファに格納する．
      */
-    p_siopcb->rcv_wpos = (p_siopcb->rcv_wpos + 1) % sizeof(p_siopcb->rcv_buf);
-
-    /*
-     *  受信割込み開始
-     */
     p_siopcb->rcv_buf[p_siopcb->rcv_wpos] = stdio_getchar_timeout_us(0);
+    p_siopcb->rcv_wpos = (p_siopcb->rcv_wpos + 1) % sizeof(p_siopcb->rcv_buf);
 
     /*
      *  受信通知コールバックルーチンを呼び出す．
