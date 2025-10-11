@@ -106,6 +106,7 @@ Inline void initialize_lock(LOCK *p_lock)
  */
 Inline void acquire_lock(LOCK *p_lock)
 {
+#if TNUM_PRCID > 1
     while (1) {
         if (sil_rew_mem(p_lock)) {
             ARM_MEMORY_CHANGED;
@@ -116,6 +117,7 @@ Inline void acquire_lock(LOCK *p_lock)
         delay_for_interrupt();
         lock_cpu();
     }
+#endif /* TNUM_PRCID > 1 */
 }
 
 /*
@@ -123,12 +125,16 @@ Inline void acquire_lock(LOCK *p_lock)
  */
 Inline bool_t try_lock(LOCK *p_lock)
 {
+#if TNUM_PRCID > 1
     if (sil_rew_mem(p_lock)) {
         ARM_MEMORY_CHANGED;
         return false;
     } else {
         return true;
     }
+#else /* !TNUM_PRCID > 1 */
+    return true;
+#endif /* TNUM_PRCID > 1 */
 }
 
 /*
@@ -136,8 +142,10 @@ Inline bool_t try_lock(LOCK *p_lock)
  */
 Inline void release_lock(LOCK *p_lock)
 {
+#if TNUM_PRCID > 1    
     ARM_MEMORY_CHANGED;
     sil_wrw_mem(p_lock, 0);
+#endif /* TNUM_PRCID > 1 */        
 }
 
 /*

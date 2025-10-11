@@ -61,7 +61,9 @@
 extern const void (**p_exc_tbl[])(void);
 extern const FP __vectors[];
 extern const FP _kernel_c_exc_tbl_prc1[];
+#if TNUM_PRCID > 1
 extern const FP _kernel_c_exc_tbl_prc2[];
+#endif /* TNUM_PRCID > 1 */
 extern uint32_t __StackTop;
 extern uint32_t __StackBottom;
 extern uint32_t __StackOneTop;
@@ -69,17 +71,23 @@ extern uint32_t __StackOneBottom;
 
 STK_T *const _kernel_istk_table[TNUM_PRCID] = {
 	(STK_T *)&__StackBottom,
+#if TNUM_PRCID > 1
 	(STK_T *)&__StackOneBottom
+#endif /* TNUM_PRCID > 1 */      
 };
 
 STK_T *const _kernel_istkpt_table[TNUM_PRCID] = {
 	(STK_T *)&__StackTop,
+#if TNUM_PRCID > 1        
 	(STK_T *)&__StackOneTop
+#endif /* TNUM_PRCID > 1 */      
 };
 
 const size_t _kernel_istksz_table[TNUM_PRCID] = {
 	PICO_STACK_SIZE,
+#if TNUM_PRCID > 1            
 	PICO_CORE1_STACK_SIZE
+#endif /* TNUM_PRCID > 1 */      
 };
 
 static bool exception_is_compile_time_default(exception_handler_t handler) {
@@ -93,7 +101,9 @@ static inline exception_handler_t *get_exception_table(int prcidx) {
 static void set_raw_exception_handler_and_restore_interrupts(enum exception_number num, exception_handler_t handler, uint32_t save) {
     // update vtable (vtable_handler may be same or updated depending on cases, but we do it anyway for compactness)
     get_exception_table(0)[num] = handler;
+#if TNUM_PRCID > 1
     get_exception_table(1)[num] = handler;
+#endif /* TNUM_PRCID > 1 */          
     __dmb();
     restore_interrupts_from_disabled(save);
 }
@@ -137,7 +147,9 @@ static inline void *remove_thumb_bit(void *addr) {
 static void set_raw_irq_handler_and_unlock(uint num, irq_handler_t handler, uint32_t save) {
     // update vtable (vtable_handler may be same or updated depending on cases, but we do it anyway for compactness)
     get_vtable(0)[VTABLE_FIRST_IRQ + num] = handler;
+#if TNUM_PRCID > 1
     get_vtable(1)[VTABLE_FIRST_IRQ + num] = handler;
+#endif /* #if TNUM_PRCID > 1 */    
     __dmb();
     spin_unlock(spin_lock_instance(PICO_SPINLOCK_ID_IRQ), save);
 }
@@ -405,7 +417,9 @@ void __wrap_irq_add_tail_to_free_list(struct irq_handler_chain_slot *slot) {
     int8_t slot_index = get_slot_index(slot);
     if (slot_handler == get_vtable(0)[exception]) {
         get_vtable(0)[exception] = (irq_handler_t)_kernel_default_int_handler;
+#if TNUM_PRCID > 1        
         get_vtable(1)[exception] = (irq_handler_t)_kernel_default_int_handler;
+#endif /* TNUM_PRCID > 1 */        
     } else {
         bool __unused found = false;
         // need to find who points at the slot and update it
@@ -427,7 +441,9 @@ void __wrap_irq_add_tail_to_free_list(struct irq_handler_chain_slot *slot) {
 
 void target_kernel_init_install_ram_vector_table(void) {
     __builtin_memcpy(p_exc_tbl[0], _kernel_c_exc_tbl_prc1, sizeof(void*) * TMAX_INTNO);
+#if TNUM_PRCID > 1    
     __builtin_memcpy(p_exc_tbl[1], _kernel_c_exc_tbl_prc2, sizeof(void*) * TMAX_INTNO);
+#endif /* TNUM_PRCID > 1 */    
 }
 
 PICO_RUNTIME_INIT_FUNC_RUNTIME(target_kernel_init_install_ram_vector_table, PICO_RUNTIME_INIT_INSTALL_RAM_VECTOR_TABLE);
@@ -440,7 +456,9 @@ void core1_entory(void)
 }
 
 void target_mprc_initialize(void) {
+#if TNUM_PRCID > 1        
     multicore_launch_core1(core1_entory);
+#endif /* TNUM_PRCID > 1 */    
 }
 
 uintptr_t __used __attribute__((section(".init_array"))) __init_target_mprc_initialize = (uintptr_t)(void (*)(void)) (target_mprc_initialize);
