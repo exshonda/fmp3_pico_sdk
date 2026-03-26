@@ -1,3 +1,4 @@
+add_compile_options(-falign-functions=32)
 
 list(APPEND FMP3_SYMVAL_TABLES
     ${ARCHDIR}/common/core_sym.def
