@@ -65,6 +65,7 @@
 /* Measurement GPIO Pin */
 #define M_GPIO_NO1  2
 #define M_GPIO_NO2  3
+#define M_GPIO_NO3  4
 
 static inline void
 init_hist(int number)
@@ -80,6 +81,12 @@ init_hist(int number)
         gpio_init(M_GPIO_NO2);
         gpio_set_dir(M_GPIO_NO2, GPIO_OUT);
     }
+
+    //GPIO4 init
+    if ( number == 3) {
+        gpio_init(M_GPIO_NO3);
+        gpio_set_dir(M_GPIO_NO3, GPIO_OUT);
+    }    
 }
 
 static inline void
@@ -91,6 +98,9 @@ begin_measure(int number)
     else if ( number == 2) {
         gpio_put(M_GPIO_NO2, 1);
     }
+    else if ( number == 3) {
+        gpio_put(M_GPIO_NO3, 1);
+    }    
 }
 
 static inline void
@@ -101,7 +111,10 @@ end_measure(int number)
     }
     else if ( number == 2) {
         gpio_put(M_GPIO_NO2, 0);
-    }    
+    }
+    else if ( number == 3) {
+        gpio_put(M_GPIO_NO3, 0);
+    }        
 }
 
 static inline void
