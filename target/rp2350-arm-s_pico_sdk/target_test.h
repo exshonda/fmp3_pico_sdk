@@ -60,6 +60,54 @@
 #define intno1_clear()
 #define intno2_clear()
 
+#include "pico/stdlib.h"
+
+/* Measurement GPIO Pin */
+#define M_GPIO_NO1  2
+#define M_GPIO_NO2  3
+
+static inline void
+init_hist(int number)
+{
+    if ( number == 1) {
+        //GPIO2 init
+        gpio_init(M_GPIO_NO1);
+        gpio_set_dir(M_GPIO_NO1, GPIO_OUT);
+    }
+
+    //GPIO3 init
+    if ( number == 2) {
+        gpio_init(M_GPIO_NO2);
+        gpio_set_dir(M_GPIO_NO2, GPIO_OUT);
+    }
+}
+
+static inline void
+begin_measure(int number)
+{
+    if ( number == 1) {
+        gpio_put(M_GPIO_NO1, 1);
+    }
+    else if ( number == 2) {
+        gpio_put(M_GPIO_NO2, 1);
+    }
+}
+
+static inline void
+end_measure(int number)
+{
+    if ( number == 1) {
+        gpio_put(M_GPIO_NO1, 0);
+    }
+    else if ( number == 2) {
+        gpio_put(M_GPIO_NO2, 0);
+    }    
+}
+
+static inline void
+print_hist(int number) {
+}
+     
 /*
  *  コア依存モジュール（ARM-M用）
  */
